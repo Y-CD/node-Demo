@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="./libs/bootstrap/css/bootstrap.min.css">
+  <style>
+    .panel {
+      width: 900px;
+      margin: 10px auto;
+    }
+
+    .table img {
+      width: 40px;
+      height: 40px;
+    }
+  </style>
+
+
+</head>
+
+<body>
+  <!-- 添加英雄的模块 -->
+  <div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">添加英雄</h4>
+        </div>
+        <div class="modal-body">
+          <form class="form-horizontal" id="addHeroForm">
+            <div class="form-group">
+              <label for="inputEmail3" class="col-sm-2 control-label">英雄名</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" name="name" required="required" placeholder="输入英雄名...">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="inputPassword3" class="col-sm-2 control-label">英雄性别</label>
+              <div class="col-sm-10">
+
+                <div class="form-group">
+                  <div class="col-sm-10">
+                    <select name="gender" id="inputgender" class="form-control" required="required">
+                      <option value="男">男</option>
+                      <option value="女">女</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                <button type="submit" id="addHero" class="btn btn-success">提交</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <!-- 结束 -->
+
+  <!-- 3、上传头像静态布局-开始 -->
+  <div class="modal fade" id="uploadModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">上传头像</h4>
+        </div>
+        <div class="modal-body">
+          <input type="file" id="file_name">
+        </div>
+        <div class="modal-body">
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="btnupload" class="btn btn-primary">提交</button>
+          <button type="button" data-dismiss="modal" class="btn btn-default">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 3、上传头像静态布局-结束 -->
+
+
+  <div class="container">
+    <div class="panel panel-primary">
+      <!-- Default panel contents -->
+      <div class="panel-heading">英雄列表管理</div>
+      <div class="panel-body">
+        <!-- 存放的搜索区域 -->
+        <div class="row">
+          <div class="col-lg-6">
+            <div class="input-group">
+              <input type="text" id="hname" class="form-control" placeholder="输入英雄信息...">
+              <span class="input-group-btn">
+                <button class="btn btn-default" id="btn_search" type="button">搜索</button>
+              </span>
+            </div><!-- /input-group -->
+          </div><!-- /.col-lg-6 -->
+
+          <div class="col-lg-3 col-lg-offset-3">
+            <!-- 添加英雄的按钮 -->
+
+            <button data-toggle="modal" data-target="#myModal" type="button" class="btn btn-success">添加英雄</button>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Table -->
+      <table class="table">
+        <thead>
+          <tr>
+            <th>编号</th>
+            <th>英雄名称</th>
+            <th>英雄性别</th>
+            <th>头像</th>
+            <th>操作区</th>
+          </tr>
+
+        </thead>
+        <!-- 表格主体 -->
+        <tbody id="tbody">
+          <!-- tr 是一行内容 -->
+          <tr>
+            <td>1</td>
+            <td>大乔</td>
+            <td>女</td>
+            <td><img src=""></td>
+            <td>
+              <button type="button" class="btn btn-warning">上传头像</button>
+              <button type="button" class="btn btn-danger">删除</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script src="./libs/jquery/jquery.min.js"></script>
+  <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+  <script src="./lib/template-web.js"></script>
+  <!-- 定义模板 -->
+  <script type="text/html" id="info">
+    {{ each list item }}
+        <tr>
+          <td>{{item.id}}</td>
+          <td>{{item.name}}</td>
+          <td>{{item.gender}}</td>
+          <td><img src="{{item.img || ''}}"></td>
+          <td>
+            <button data-id="{{item.id}}" type="button" class="btn btn-warning">上传头像</button>
+            <button data-id="{{item.id}}" type="button" class="btn btn-danger">删除</button>
+          </td>
+        </tr>
+    {{ /each }}
+  </script>
+  <script>
+    $(() => {
+      // 统一携带token
+      $.ajaxPrefilter(function (option) {
+        option.headers = {
+          Authorization: localStorage.getItem('token') || ''
+        }
+      });
+      // 统一处理401错误
+      $(document).ajaxError(function (event, request, settings) {
+        if (request.status === 401) {
+          // alert(request.responseJSON.msg)
+          return location.href = './login.html'
+        }
+      })
+
+
+      // 功能1：获取所有的英雄数据
+      getHero();
+      // 封装函数 利用传参数的方式可以实现 查找全部英雄 或者指定的那个英雄
+      function getHero(name = '') {
+        $.ajax({
+          url: 'http://127.0.0.1:3001/hero/getHeroList',
+          type: 'get',
+          data: { heroName: name },
+          success: function (res) {
+            // console.log(res.data);
+            let htmlStr = template('info', { list: res.data })
+            $("#tbody").html(htmlStr);
+
+            $("#hname").focus().val("");
+          }
+        });
+      };
+
+      // 点击搜索按钮收搜某个英雄
+      $("#btn_search").on("click", () => {
+        const name = $("#hname").val().trim();
+        getHero(name);
+      });
+
+      // 添加英雄
+      $("#addHero").on('click', (e) => {
+        // 阻止默认提交事件
+        e.preventDefault();
+        // 获取到英雄名和性别
+        let heroName = $('[name=name]').val().trim();
+        let gender = $('#inputgender').val();
+        // console.log(heroName, gender);
+        // 非空判断
+        if (!heroName || !gender) {
+          return alert("请输入英雄名称");
+        }
+        $.ajax({
+          url: 'http://127.0.0.1:3001/hero/addHero',
+          method: 'POST',
+          data: {
+            name: heroName,
+            gender: gender
+          },
+          success: function (res) {
+            // console.log(res);
+            if (res.code != 200) {
+              return alert(res.msg);
+            }
+            alert('添加成功');
+            // 关闭模态框
+            $('#myModal').modal('hide');
+            // 原生js 清空表单  reset() 方法快速重置表单
+            document.querySelector("#addHeroForm").reset();
+            // 刷新数据
+            getHero();
+          }
+        });
+
+      });
+
+      // 删除英雄
+      $('#tbody').on('click', '.btn-danger', function () {
+        // 获取到id
+        let id = $(this).attr('data-id');
+        // console.log(id);
+        // 发送ajax
+        $.ajax({
+          url: 'http://127.0.0.1:3001/hero/delHeroById',
+          method: 'GET',
+          data: { id: id },
+          success: function (res) {
+            // console.log(res);
+            if (res.code != 200) {
+              return alert('删除失败');
+            }
+            alert('删除成功');
+            getHero();
+          }
+        });
+      });
+
+      // 上传英雄头像
+      // 点击显示模态框
+      let id = '';
+      $('#tbody').on('click', '.btn-warning', function () {
+        $('#uploadModal').modal('show')
+        id = $(this).attr('data-id');
+        // console.log(id);
+      });
+      // 点击提交按钮
+      $('#btnupload').on('click', function () {
+        // console.log(1);
+        // 获取文件信息
+        let file = $('#file_name').get(0).files[0];
+        // console.log(file);
+        let fd = new FormData();
+        fd.append('file_data', file);
+        // 发送ajax
+        $.ajax({
+          url: 'http://127.0.0.1:3001/hero/uploadFile',
+          method: 'POST',
+          data: fd,
+          processData: false,// 无需 jq 处理内容类型
+          contentType: false,// 无需 jq 处理数据
+          success: function (res) {
+            // console.log(res);
+            if (res.code != 200) {
+              return alert('上传失败')
+            }
+            // 更新英雄头像
+            $.ajax({
+              url: 'http://127.0.0.1:3001/hero/updateHero',
+              method: 'POST',
+              data: {
+                id: id,
+                img: res.src
+              },
+              success: function (res) {
+                // console.log(res);
+                if (res.code != 200) {
+                  return alert('更新失败');
+                }
+                // 关闭模态框
+                $('#uploadModal').modal('hide');
+                alert('更新头像成功');
+                // 刷新页面数据
+                getHero();
+              }
+            });
+          }
+        });
+      });
+
+    })
+  </script>
+</body>
+
+</html>

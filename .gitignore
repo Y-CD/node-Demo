@@ -1,0 +1,2 @@
+# 提交时忽略 node_modules 文件夹 下载后 使用 npm install 命令会自动下载项目需要的包
+/server/node_modules/
